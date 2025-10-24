@@ -2,6 +2,18 @@ import { useState, useEffect, useRef } from "react";
 import { useLocalStorage } from "./hooks/useLocalStorage";
 
 function ConfigurableAI() {
+  const [darkMode, setDarkMode] = useLocalStorage("ai_dark_mode", false);
+  
+  // Apply dark mode class to body
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [darkMode]);
+
+function ConfigurableAI() {
   // State for API configuration
   const [apiConfig, setApiConfig] = useLocalStorage("ai_api_config", {
     apiKey: "",
@@ -127,148 +139,153 @@ function ConfigurableAI() {
   };
 
   return (
-    <div className="p-4 max-w-4xl mx-auto h-screen flex flex-col">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">AI Chat</h1>
-        <div className="flex gap-2">
-          <button
-            onClick={clearChatHistory}
-            className="px-3 py-1 text-sm bg-gray-500 text-white rounded hover:bg-gray-600"
-          >
-            Clear Chat
-          </button>
-          <button
-            onClick={resetSettings}
-            className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
-          >
-            Reset All
-          </button>
-        </div>
-      </div>
+    <div className="p-4 max-w-4xl mx-auto h-screen flex flex-col bg-white dark:bg-gray-900">
+  {/* Header */}
+  <div className="flex justify-between items-center mb-4">
+    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">AI Chat</h1>
+    <div className="flex gap-2">
+      {/* Dark Mode Button */}
+      <button
+        onClick={() => setDarkMode(!darkMode)}
+        className="px-3 py-1 text-sm bg-gray-500 text-white rounded hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700"
+      >
+        {darkMode ? 'Light Mode' : 'Dark Mode'}
+      </button>
+      <button
+        onClick={clearChatHistory}
+        className="px-3 py-1 text-sm bg-gray-500 text-white rounded hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700"
+      >
+        Clear Chat
+      </button>
+      <button
+        onClick={resetSettings}
+        className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700"
+      >
+        Reset All
+      </button>
+    </div>
+  </div>
 
-      <div className="flex gap-6 flex-1 overflow-hidden">
-        {/* Left Side - Configuration */}
-        <div className="w-1/3 flex flex-col">
-          {/* API Settings */}
-          <div className="mb-6 p-4 border rounded-lg bg-gray-50 flex-1">
-            <h3 className="text-lg font-semibold mb-3">API Settings</h3>
-            
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium mb-1">API Key</label>
-                <input
-                  type="password"
-                  value={apiConfig.apiKey}
-                  onChange={(e) => handleConfigChange("apiKey", e.target.value)}
-                  placeholder="sk-..."
-                  className="w-full p-2 border rounded"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">API URL</label>
-                <input
-                  type="text"
-                  value={apiConfig.apiUrl}
-                  onChange={(e) => handleConfigChange("apiUrl", e.target.value)}
-                  className="w-full p-2 border rounded"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Model</label>
-                <input
-                  type="text"
-                  value={apiConfig.model}
-                  onChange={(e) => handleConfigChange("model", e.target.value)}
-                  placeholder="gpt-3.5-turbo"
-                  className="w-full p-2 border rounded"
-                />
-              </div>
-
-              {/* Personality Input */}
-              <div>
-                <label className="block text-sm font-medium mb-1">AI Personality</label>
-                <textarea
-                  value={personality}
-                  onChange={(e) => setPersonality(e.target.value)}
-                  placeholder="Describe the AI's personality, tone, style, language, etc."
-                  className="w-full p-2 border rounded h-24"
-                  rows={3}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Side - Chat */}
-        <div className="w-2/3 flex flex-col border rounded-lg">
-          {/* Chat Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {chatHistory.length === 0 ? (
-              <div className="text-center text-gray-500 mt-8">
-                No messages yet. Start a conversation!
-              </div>
-            ) : (
-              chatHistory.map((message, index) => (
-                <div
-                  key={index}
-                  className={`p-3 rounded-lg max-w-[80%] ${
-                    message.role === "user"
-                      ? "bg-blue-500 text-white ml-auto"
-                      : message.role === "error"
-                      ? "bg-red-100 border border-red-300 text-red-800"
-                      : "bg-gray-100 text-gray-800"
-                  }`}
-                >
-                  <div className="whitespace-pre-wrap">{message.content}</div>
-                  <div className={`text-xs mt-1 ${
-                    message.role === "user" ? "text-blue-100" : "text-gray-500"
-                  }`}>
-                    {message.timestamp}
-                  </div>
-                </div>
-              ))
-            )}
-            {isLoading && (
-              <div className="p-3 rounded-lg bg-gray-100 text-gray-800 max-w-[80%]">
-                <div className="flex items-center gap-2">
-                  <div className="animate-pulse">Thinking...</div>
-                  <div className="flex gap-1">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
-                  </div>
-                </div>
-              </div>
-            )}
-            <div ref={chatEndRef} />
+  <div className="flex gap-6 flex-1 overflow-hidden">
+    {/* Left Side - Configuration */}
+    <div className="w-1/3 flex flex-col">
+      {/* API Settings */}
+      <div className="mb-6 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-600 flex-1">
+        <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">API Settings</h3>
+        
+        <div className="space-y-3">
+          <div>
+            <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-white">API Key</label>
+            <input
+              type="password"
+              value={apiConfig.apiKey}
+              onChange={(e) => handleConfigChange("apiKey", e.target.value)}
+              placeholder="sk-..."
+              className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            />
           </div>
 
-          {/* Chat Input */}
-          <div className="p-4 border-t">
-            <form onSubmit={handleSubmit} className="flex gap-2">
-              <input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Type your message..."
-                className="flex-1 p-2 border rounded"
-                disabled={isLoading}
-              />
-              <button 
-                type="submit" 
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400"
-                disabled={isLoading || !apiConfig.apiKey}
-              >
-                {isLoading ? "..." : "Send"}
-              </button>
-            </form>
+          <div>
+            <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-white">API URL</label>
+            <input
+              type="text"
+              value={apiConfig.apiUrl}
+              onChange={(e) => handleConfigChange("apiUrl", e.target.value)}
+              className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-white">Model</label>
+            <input
+              type="text"
+              value={apiConfig.model}
+              onChange={(e) => handleConfigChange("model", e.target.value)}
+              placeholder="gpt-3.5-turbo"
+              className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            />
+          </div>
+
+          {/* Personality Input */}
+          <div>
+            <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-white">AI Personality</label>
+            <textarea
+              value={personality}
+              onChange={(e) => setPersonality(e.target.value)}
+              placeholder="Describe the AI's personality, tone, style, language, etc."
+              className="w-full p-2 border rounded h-24 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              rows={3}
+            />
           </div>
         </div>
       </div>
     </div>
-  );
-}
+
+    {/* Right Side - Chat */}
+    <div className="w-2/3 flex flex-col border rounded-lg dark:border-gray-600 dark:bg-gray-800">
+      {/* Chat Messages */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {chatHistory.length === 0 ? (
+          <div className="text-center text-gray-500 dark:text-gray-400 mt-8">
+            No messages yet. Start a conversation!
+          </div>
+        ) : (
+          chatHistory.map((message, index) => (
+            <div
+              key={index}
+              className={`p-3 rounded-lg max-w-[80%] ${
+                message.role === "user"
+                  ? "bg-blue-500 text-white ml-auto"
+                  : message.role === "error"
+                  ? "bg-red-100 border border-red-300 text-red-800 dark:bg-red-900 dark:border-red-700 dark:text-red-200"
+                  : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
+              }`}
+            >
+              <div className="whitespace-pre-wrap">{message.content}</div>
+              <div className={`text-xs mt-1 ${
+                message.role === "user" ? "text-blue-100" : "text-gray-500 dark:text-gray-400"
+              }`}>
+                {message.timestamp}
+              </div>
+            </div>
+          ))
+        )}
+        {isLoading && (
+          <div className="p-3 rounded-lg bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200 max-w-[80%]">
+            <div className="flex items-center gap-2">
+              <div className="animate-pulse">Thinking...</div>
+              <div className="flex gap-1">
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce dark:bg-gray-500"></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce dark:bg-gray-500" style={{ animationDelay: "0.1s" }}></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce dark:bg-gray-500" style={{ animationDelay: "0.2s" }}></div>
+              </div>
+            </div>
+          </div>
+        )}
+        <div ref={chatEndRef} />
+      </div>
+
+      {/* Chat Input */}
+      <div className="p-4 border-t dark:border-gray-600">
+        <form onSubmit={handleSubmit} className="flex gap-2">
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Type your message..."
+            className="flex-1 p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            disabled={isLoading}
+          />
+          <button 
+            type="submit" 
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400 dark:bg-blue-600 dark:hover:bg-blue-700"
+            disabled={isLoading || !apiConfig.apiKey}
+          >
+            {isLoading ? "..." : "Send"}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 
 export default ConfigurableAI;
